@@ -1,0 +1,106 @@
+import random
+
+class DungeonGrid:
+    def initialize_grid(self):
+        # Create a 5x5 grid with all cells initially empty ('E')
+        grid = [['E' for _ in range(5)] for _ in range(5)]
+        
+        # Place 5 traps ('T') and 3 health potions ('H') randomly on the grid
+        items = ['T'] * 5 + ['H'] * 3  # 5 traps and 3 health potions
+        
+        for item in items:
+            while True:
+                # Pick a random cell location on the grid
+                row, col = random.randint(0, 4), random.randint(0, 4)
+                
+                # If the chosen cell is empty, place the item there
+                if grid[row][col] == 'E':
+                    grid[row][col] = item
+                    break  # Exit the loop once the item is placed
+        
+        # Return the fully initialized grid
+        return grid
+
+class Player:
+    def __init__(self, name):
+        # Initialize the player with their name and starting score of 0
+        self.name = name
+        self.score = 0
+
+class DungeonEscape:
+    def __init__(self, player_name):
+        # Initialize the game with a player name and starting values
+        self.player = Player(player_name)
+        self.health = 100  # Player starts with 100 health points
+        self.position = (0, 0)  # Starting position in the top-left corner (0, 0)
+        self.grid = DungeonGrid().initialize_grid()  # Generate the dungeon grid
+    
+    def move_player(self, direction):
+        # Get the player's current position
+        x, y = self.position
+        
+        # Update the position based on the input direction, making sure not to move out of bounds
+        if direction == 'up' and x > 0:
+            x -= 1  # Move up
+        elif direction == 'down' and x < 4:
+            x += 1  # Move down
+        elif direction == 'left' and y > 0:
+            y -= 1  # Move left
+        elif direction == 'right' and y < 4:
+            y += 1  # Move right
+        else:
+            print("Oops! You can't move in that direction. Try again.")
+            return self.position  # Return the current position if movement is invalid
+        
+        # Update the player's position after a valid move
+        self.position = (x, y)
+        return self.position
+    
+    def check_cell(self):
+        # Get the player's current position
+        x, y = self.position
+        cell = self.grid[x][y]  # Check what's in the current cell
+        
+        # Check if the player encounters a trap, a health potion, or an empty cell
+        if cell == 'T':
+            # Stepped on a trap! Lose 20 health points
+            self.health -= 20
+            print(f"Oh no! You stepped on a trap. Your health is now {self.health}.")
+        elif cell == 'H':
+            # Found a health potion! Gain 10 health points and increase the score
+            self.health += 10
+            self.player.score += 10
+            print(f"Good news! You found a health potion. Health: {self.health}, Score: {self.player.score}")
+        else:
+            # Empty cell, nothing happens
+            print("This cell is empty. You're safe for now.")
+    
+    def play_turn(self):
+        # Display the player's current position, health, and score
+        print(f"\nYour current position: {self.position}")
+        print(f"Health: {self.health}, Score: {self.player.score}")
+        
+        # Ask the player which direction they want to move
+        direction = input("Where would you like to move? (up, down, left, right): ").lower()
+        
+        # Move the player and check the new cell after movement
+        self.move_player(direction)
+        self.check_cell()
+    
+    def start_game(self):
+        # Welcome message to start the game
+        print(f"Welcome to Dungeon Escape, {self.player.name}! Good luck surviving!")
+        
+        # Keep the game running as long as the player has health points
+        while self.health > 0:
+            self.play_turn()  # Play a turn of the game
+            
+            # If the player's health drops to 0 or below, end the game
+            if self.health <= 0:
+                print("Game Over! You've run out of health. Better luck next time!")
+                break
+
+# Start the game by asking the player's name
+player_name = input("Enter your name, brave adventurer: ")
+game = DungeonEscape(player_name)
+game.start_game()
